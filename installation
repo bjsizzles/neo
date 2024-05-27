@@ -1,0 +1,81 @@
+
+#!/bin/bash
+
+# Function for logging
+log() {
+    local level="$1"
+    local message="$2"
+    echo "[$(date +'%Y-%m-%d %H:%M:%S')] [$level] $message"
+}
+
+# Function for error handling
+error_exit() {
+    log "ERROR" "$1"
+    exit 1
+}
+
+# Check if correct number of arguments are passed
+if [ "$#" -ne 3 ]; then
+    error_exit "Usage: $0 <temp_directory> <rpm1> <rpm2>"
+fi
+
+TEMP_DIR="$1"
+RPM1="$2"
+RPM2="$3"
+
+log "INFO" "Script started with temp directory: $TEMP_DIR, rpm1: $RPM1, rpm2: $RPM2"
+
+# Check if temp directory exists
+if [ ! -d "$TEMP_DIR" ]; then
+    error_exit "Temporary directory $TEMP_DIR does not exist."
+fi
+
+log "INFO" "Temporary directory $TEMP_DIR exists."
+
+# Check if RPM files exist in the temp directory
+if [ ! -f "$TEMP_DIR/$RPM1" ]; then
+    error_exit "RPM file $TEMP_DIR/$RPM1 does not exist."
+fi
+
+if [ ! -f "$TEMP_DIR/$RPM2" ]; then
+    error_exit "RPM file $TEMP_DIR/$RPM2 does not exist."
+fi
+
+log "INFO" "Both RPM files exist in the temp directory."
+
+# Load the profile
+if [ -f /opt/jdk/profile ]; then
+    source /opt/jdk/profile
+    log "INFO" "Profile loaded from /opt/jdk/profile"
+else
+    error_exit "Profile file /opt/jdk/profile does not exist."
+fi
+
+# Print Java version
+log "INFO" "Java version:"
+java -version 2>&1 | while IFS= read -r line; do log "INFO" "$line"; done
+
+# Install RPMs
+log "INFO" "Installing RPMs $TEMP_DIR/$RPM1 and $TEMP_DIR/$RPM2"
+rpm -ivh --nodeps "$TEMP_DIR/$RPM1" "$TEMP_DIR/$RPM2" || error_exit "Failed to install RPMs $TEMP_DIR/$RPM1 and $TEMP_DIR/$RPM2"
+
+# Validate RPM installations
+RPM1_NAME=$(rpm -qp --queryformat '%{NAME}' "$TEMP_DIR/$RPM1")
+RPM2_NAME=$(rpm -qp --queryformat '%{NAME}' "$TEMP_DIR/$RPM2")
+
+if rpm -q "$RPM1_NAME" &> /dev/null; then
+    log "INFO" "RPM $RPM1_NAME is installed successfully."
+else
+    error_exit "RPM $RPM1_NAME is not installed."
+fi
+
+if rpm -q "$RPM2_NAME" &> /dev/null; then
+    log "INFO" "RPM $RPM2_NAME is installed successfully."
+else
+    error_exit "RPM $RPM2_NAME is not installed."
+fi
+
+log "INFO" "RPM installations validated successfully."
+
+# Script completed
+log "INFO" "Script completed successfully."
