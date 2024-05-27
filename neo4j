@@ -1,0 +1,24 @@
+---
+---
+- name: Install RPMs using a shell script
+  hosts: localhost
+  tasks:
+    - name: Copy shell script to the target machine
+      copy:
+        src: files/install_rpms.sh
+        dest: /tmp/install_rpms.sh
+        mode: '0755'
+
+    - name: Run shell script
+      command: /tmp/install_rpms.sh /path/to/temp_directory rpm1.rpm rpm2.rpm
+      register: script_result
+      failed_when: script_result.rc != 0
+
+    - name: Debug script output
+      debug:
+        var: script_result.stdout_lines
+
+    - name: Debug script error
+      debug:
+        var: script_result.stderr
+      when: script_result.rc != 0
