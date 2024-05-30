@@ -17,3 +17,10 @@
         group: root
         mode: '0644'
       when: config_file_status.stat.exists
+
+    - name: Ensure dbms.default_listen.address is set to the correct value
+      lineinfile:
+        path: "{{ config_file_path }}"
+        regexp: '^dbms.default_listen.address='
+        line: "dbms.default_listen.address={{ inventory_hostname }}"
+        state: present
