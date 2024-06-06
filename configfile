@@ -1,0 +1,12 @@
+.
+---
+- name: Update configuration file
+  hosts: localhost
+  become: yes
+  tasks:
+    - name: Append /opt/ to server.directories values in config file
+      replace:
+        path: /path/to/your/test.conf
+        regexp: '^(server\.directories\..*?=)(.*)$'
+        replace: '\1/opt/\2'
+        backup: yes
