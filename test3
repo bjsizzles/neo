@@ -1,0 +1,13 @@
+.
+- name: Synchronize file from Server 2 to Server 1
+  hosts: server1
+  gather_facts: no
+  tasks:
+    - name: Synchronize file from Server 2 to Server 1
+      synchronize:
+        src: "/path/to/remote/file/on/server2"
+        dest: "/path/to/remote/destination/on/server1"
+        mode: pull
+      vars:
+        ansible_ssh_user: your_remote_user_for_server2
+      when: inventory_hostname == groups['server1'][0]
