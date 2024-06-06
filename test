@@ -1,0 +1,16 @@
+.
+- name: Synchronize file between Server 2 and Server 1
+  hosts: all
+  gather_facts: no
+  tasks:
+    - name: Download file from Server 2 to control node
+      fetch:
+        src: /path/to/remote/file/on/server2
+        dest: /path/to/local/destination/
+      when: "'server2' in inventory_hostname"
+
+    - name: Copy file from control node to Server 1
+      copy:
+        src: /path/to/local/destination/file
+        dest: /path/to/remote/destination/on/server1
+      when: "'server1' in inventory_hostname"
