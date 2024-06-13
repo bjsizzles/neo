@@ -2,7 +2,7 @@
 ---
 - name: Parse user-provided config file
   set_fact:
-    user_config_lines: "{{ user_config_content.content | b64decode | regex_split('\\r?\\n') }}"
+    user_config_lines: "{{ user_config_content.content | b64decode | regex_replace('\\r\\n|\\r|\\n', '\n') | split('\n')  }}"
   when: user_config_file_status.stat.exists
 
 - name: Find, backup, and update neo4j.conf configuration file
