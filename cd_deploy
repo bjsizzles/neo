@@ -1,0 +1,39 @@
+.
+  tasks:
+    - name: Copy the user-provided config file to the server
+      copy:
+        src: /local/path/to/user_config_file
+        dest: "{{ user_config_path }}"
+
+    - name: Create a backup of the server config file
+      copy:
+        src: "{{ server_config_path }}"
+        dest: "{{ backup_path }}"
+        backup: yes
+
+    - name: Upload backup to Artifactory
+      uri:
+        url: "{{ artifactory_url }}/{{ inventory_hostname }}_configfile_backup_{{ ansible_date_time.iso8601 }}.bak"
+        method: PUT
+        user: "{{ artifactory_username }}"
+        password: "{{ artifactory_password }}"
+        force_basic_auth: yes
+        src: "{{ backup_path }}"
+        status_code: 201
+
+    - name: Read the user-provided config file
+      slurp:
+        src: "{{ user_config_path }}"
+      register: user_config_content
+
+    - name: Parse user-provided config file
+      set_fact:
+        user_config_lines: "{{ user_config_content.content | b64decode | splitlines }}"
+
+    - name: Ensure user inputs are in the server config file
+      lineinfile:
+        path: "{{ server_config_path }}"
+        regexp: '^{{ item.split('=')[0] }}='
+        line: "{{ item }}"
+        state: present
+      loop: "{{ user_config_lines }}"
