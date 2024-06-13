@@ -87,3 +87,12 @@
       set_fact:
         neo4j_conf_file_path: "{{ neo4j_conf_path }}"
       when: user_config_file_status.stat.exists
+
+    - name: Find the neo4j.conf file in /etc/neo4j or install_location/etc/neo4j
+      find:
+        paths:
+          - /etc/neo4j/
+          - "{{ install_location }}/etc/neo4j/"
+        patterns: 'neo4j.conf'
+      register: neo4j_conf_files
+      when: user_config_file_status.stat.exists
