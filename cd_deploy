@@ -1,24 +1,53 @@
 .
+---
+- name: Find, backup, and update neo4j.conf configuration file
+  hosts: your_target_host
+  become: yes
+  vars:
+    user_config_path: /tmp/user_config_file
+    install_location: "/your/install/location"
+    backup_dir: /tmp
+    artifactory_url: "https://artifactory.example.com/artifactory/path/to/backup"
+    artifactory_username: "your_username"
+    artifactory_password: "your_password"
   tasks:
     - name: Copy the user-provided config file to the server
       copy:
         src: /local/path/to/user_config_file
         dest: "{{ user_config_path }}"
 
-    - name: Create a backup of the server config file
+    - name: Find the neo4j.conf file in /etc/neo4j or install_location/etc/neo4j
+      find:
+        paths:
+          - /etc/neo4j/
+          - "{{ install_location }}/etc/neo4j/"
+        patterns: 'neo4j.conf'
+      register: neo4j_conf_files
+
+    - name: Ensure a neo4j.conf file is found
+      assert:
+        that:
+          - neo4j_conf_files.matched > 0
+        fail_msg: "No neo4j.conf file found in specified locations."
+
+    - name: Set the path to the neo4j.conf file
+      set_fact:
+        neo4j_conf_path: "{{ neo4j_conf_files.files[0].path }}"
+
+    - name: Create a backup of the neo4j.conf file
       copy:
-        src: "{{ server_config_path }}"
-        dest: "{{ backup_path }}"
+        src: "{{ neo4j_conf_path }}"
+        dest: "{{ backup_dir }}/neo4j_conf_backup_{{ ansible_date_time.iso8601 }}.bak"
         backup: yes
 
     - name: Upload backup to Artifactory
       uri:
-        url: "{{ artifactory_url }}/{{ inventory_hostname }}_configfile_backup_{{ ansible_date_time.iso8601 }}.bak"
+        url: "{{ artifactory_url }}/neo4j_conf_backup_{{ ansible_date_time.iso8601 }}.bak"
         method: PUT
         user: "{{ artifactory_username }}"
         password: "{{ artifactory_password }}"
         force_basic_auth: yes
-        src: "{{ backup_path }}"
+        src: "{{ backup_dir }}/neo4j_conf_backup_{{ ansible_date_time.iso8601 }}.bak"
         status_code: 201
 
     - name: Read the user-provided config file
@@ -30,9 +59,9 @@
       set_fact:
         user_config_lines: "{{ user_config_content.content | b64decode | splitlines }}"
 
-    - name: Ensure user inputs are in the server config file
+    - name: Ensure user inputs are in the neo4j.conf file
       lineinfile:
-        path: "{{ server_config_path }}"
+        path: "{{ neo4j_conf_path }}"
         regexp: '^{{ item.split('=')[0] }}='
         line: "{{ item }}"
         state: present
