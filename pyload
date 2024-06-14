@@ -1,0 +1,70 @@
+neo4j_4x_configs:
+  - dbms.connector.bolt.enabled
+  - dbms.connector.http.enabled
+  - dbms.connector.https.enabled
+  - dbms.default_database
+  - dbms.directories.data
+  - dbms.directories.logs
+  - dbms.memory.heap.initial_size
+  - dbms.memory.heap.max_size
+  - dbms.pagecache.memory
+  - dbms.security.auth_enabled
+  - dbms.security.procedures.unrestricted
+  - dbms.security.procedures.whitelist
+  - dbms.security.ssl_policy.bolt.enabled
+  - dbms.security.ssl_policy.https.enabled
+  - dbms.logs.query.enabled
+  - dbms.logs.debug.level
+  - dbms.logs.query.rotation.size
+  - dbms.logs.security.level
+  - causal_clustering.minimum_core_cluster_size_at_formation
+  - causal_clustering.minimum_core_cluster_size_at_runtime
+  - causal_clustering.initial_discovery_members
+  - causal_clustering.discovery_listen_address
+  - causal_clustering.transaction_listen_address
+  - causal_clustering.raft_listen_address
+  - dbms.index.default_schema_provider
+  - dbms.index_sampling.buffer_size
+  - dbms.index_sampling.sample_size_limit
+neo4j_5x_configs:
+  - server.bolt.listen_address
+  - server.http.listen_address
+  - server.https.listen_address
+  - server.default_database
+  - server.directories.data
+  - server.directories.logs
+  - server.memory.heap.initial_size
+  - server.memory.heap.max_size
+  - server.pagecache.memory
+  - server.security.auth_enabled
+  - server.security.procedures.unrestricted
+  - server.security.procedures.whitelist
+  - server.security.ssl_policy.bolt.enabled
+  - server.security.ssl_policy.https.enabled
+  - server.logs.query.enabled
+  - server.logs.debug.level
+  - server.logs.query.rotation.size
+  - server.logs.security.level
+  - dbms.cluster.minimum_cluster_size
+  - dbms.cluster.initial_discovery_members
+  - dbms.cluster.discovery_listen_address
+  - dbms.cluster.transaction_listen_address
+  - dbms.cluster.raft_listen_address
+  - dbms.index.default_schema_provider
+  - dbms.index_sampling.buffer_size
+  - dbms.index_sampling.sample_size_limit
+
+
+import yaml
+
+# Load Neo4j 4.x configs
+with open('neo4j_4x_configs.yaml', 'r') as file:
+    neo4j_4x_configs = yaml.safe_load(file)['neo4j_4x_configs']
+
+# Load Neo4j 5.x configs
+with open('neo4j_5x_configs.yaml', 'r') as file:
+    neo4j_5x_configs = yaml.safe_load(file)['neo4j_5x_configs']
+
+# Print the lists to verify
+print("Neo4j 4.x Configs:", neo4j_4x_configs)
+print("Neo4j 5.x Configs:", neo4j_5x_configs)
