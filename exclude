@@ -1,0 +1,12 @@
+- name: Load config YAML
+  set_fact:
+    excluded_keys: "{{ lookup('file', 'config.yaml') | from_yaml }}"
+
+- name: Ensure user inputs are in the neo4j.conf file
+  lineinfile:
+    path: "{{ neo4j_conf_path }}"
+    regexp: '^{{ item.split('=')[0] }}='
+    line: "{{ item }}"
+    state: present
+  loop: "{{ user_config_lines }}"
+  when: user_config_file_status.stat.exists and item.split('=')[0] not in excluded_keys
