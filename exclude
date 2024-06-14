@@ -3,6 +3,20 @@
     src: files/config.yaml
     dest: /path/on/server/config.yaml
 
+- name: Create temporary directory
+  tempfile:
+    state: directory
+  register: temp_dir
+
+- name: Copy YAML file to temporary directory
+  copy:
+    src: files/config.yaml
+    dest: "{{ temp_dir.path }}/config.yaml"
+
+- name: Load YAML file into a list variable
+  set_fact:
+    excluded_keys: "{{ lookup('file', temp_dir.path + '/config.yaml') | from_yaml | list }}"
+
 - name: Load YAML file into a list variable
   set_fact:
     excluded_keys: "{{ lookup('file', '/path/on/server/config.yaml') | from_yaml | list }}"
