@@ -1,6 +1,11 @@
-- name: Load config YAML
+- name: Copy YAML file to server
+  copy:
+    src: files/config.yaml
+    dest: /path/on/server/config.yaml
+
+- name: Load YAML file into a list variable
   set_fact:
-    excluded_keys: "{{ lookup('file', 'config.yaml') | from_yaml }}"
+    excluded_keys: "{{ lookup('file', '/path/on/server/config.yaml') | from_yaml | list }}"
 
 - name: Ensure user inputs are in the neo4j.conf file
   lineinfile:
