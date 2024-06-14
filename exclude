@@ -1,5 +1,10 @@
 "{{ dict(servers | map('regex_replace', '(.*)', '\\1:' ~ port) | list) }}"
 
+    - name: Create hello mapping
+      set_fact:
+        hello_mapping: "{{ hello_mapping | default({}) | combine({ item: 5000 }) }}"
+      loop: "{{ servers }}"
+
 - name: Copy YAML file to server
   copy:
     src: files/config.yaml
