@@ -1,3 +1,5 @@
+"{{ dict(servers | map('regex_replace', '(.*)', '\\1:' ~ port) | list) }}"
+
 - name: Copy YAML file to server
   copy:
     src: files/config.yaml
