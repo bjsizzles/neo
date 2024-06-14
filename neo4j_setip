@@ -1,0 +1,14 @@
+.
+- name: Determine Neo4j installation directory
+  hosts: localhost
+  gather_facts: no
+  vars:
+    NEO4J_ROOT: ""
+  tasks:
+    - name: Set Neo4j installation directory based on NEO4J_ROOT
+      set_fact:
+        neo4j_installation_directory: "{{ NEO4J_ROOT if NEO4J_ROOT else '/etc/neo4j' }}"
+
+    - name: Debug Neo4j installation directory
+      debug:
+        msg: "Neo4j installation directory is {{ neo4j_installation_directory }}"
