@@ -1,0 +1,33 @@
+tasks:
+    - name: Check if neo4j.conf exists in the default path
+      stat:
+        path: "{{ default_config_path }}"
+      register: default_config
+      ignore_errors: yes
+
+    - name: Check if neo4j.conf exists in the custom path
+      stat:
+        path: "{{ custom_config_path }}"
+      register: custom_config
+      when: not default_config.stat.exists
+      ignore_errors: yes
+
+    - name: Set the found config path
+      set_fact:
+        config_path: >-
+          {% if default_config.stat.exists %}
+            {{ default_config_path }}
+          {% elif custom_config.stat.exists %}
+            {{ custom_config_path }}
+          {% else %}
+            None
+          {% endif %}
+
+    - name: Debug the config path
+      debug:
+        msg: >-
+          {% if config_path == 'None' %}
+            neo4j.conf not found in either /etc/neo4j/config or {{ neo4j_root }}/config
+          {% else %}
+            Found neo4j.conf at {{ config_path }}
+          {% endif %}
