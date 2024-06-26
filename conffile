@@ -1,0 +1,29 @@
+---
+- name: Find neo4j.conf file
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Check if neo4j.conf exists in /etc/neo4j/conf
+      stat:
+        path: /etc/neo4j/conf/neo4j.conf
+      register: conf_in_etc
+
+    - name: Check if neo4j.conf exists in {{ NEO4J_ROOT }}/conf
+      stat:
+        path: "{{ NEO4J_ROOT | default('/nonexistent') }}/conf/neo4j.conf"
+      register: conf_in_root
+      when: NEO4J_ROOT is defined
+
+    - name: Set neo4j.conf path based on existence
+      set_fact:
+        neo4j_conf_path: >-
+          {{ conf_in_etc.stat.exists | ternary('/etc/neo4j/conf/neo4j.conf', conf_in_root.stat.exists | ternary(NEO4J_ROOT + '/conf/neo4j.conf', '')) }}
+
+    - name: Fail if neo4j.conf file is not found
+      fail:
+        msg: "neo4j.conf file not found in either /etc/neo4j/conf or {{ NEO4J_ROOT }}/conf"
+      when: neo4j_conf_path == ''
+
+    - name: Debug neo4j.conf path
+      debug:
+        msg: "The neo4j.conf file is located at {{ neo4j_conf_path }}"
